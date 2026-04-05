@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>CRM Lead Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0b0c0f;
+  --surface:#111318;
+  --surface2:#181b22;
+  --border:#1f2330;
+  --border2:#262c3a;
+  --text:#e2e6f0;
+  --muted:#5a6278;
+  --dim:#7d879f;
+  --accent:#3b82f6;
+  --accent2:#6366f1;
+  --high:#22c55e;
+  --med:#f59e0b;
+  --low:#ef4444;
+  --font:'Syne',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font)}
+#root{display:flex;min-height:100vh}
+
+/* Sidebar */
+.sidebar{width:200px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:0;flex-shrink:0;position:sticky;top:0;height:100vh}
+.sidebar-logo{padding:24px 20px 20px;border-bottom:1px solid var(--border)}
+.logo-mark{display:flex;align-items:center;gap:10px}
+.logo-box{width:30px;height:30px;background:var(--accent);border-radius:6px;display:grid;place-items:center;flex-shrink:0}
+.logo-box svg{width:16px;height:16px}
+.logo-text{font-size:13px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--text)}
+.nav{padding:16px 0;flex:1}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;font-size:13px;font-weight:500;color:var(--muted);transition:all .15s;border-left:2px solid transparent;letter-spacing:.3px}
+.nav-item:hover{color:var(--text);background:var(--surface2)}
+.nav-item.active{color:var(--accent);border-left-color:var(--accent);background:rgba(59,130,246,.06)}
+.nav-icon{width:16px;height:16px;opacity:.7}
+.nav-item.active .nav-icon{opacity:1}
+.sidebar-footer{padding:16px 20px;border-top:1px solid var(--border)}
+.status-dot{width:6px;height:6px;border-radius:50%;background:var(--high);display:inline-block;margin-right:6px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.status-text{font-size:11px;color:var(--muted);font-family:var(--mono)}
+
+/* Main */
+.main{flex:1;overflow-y:auto;padding:32px 36px}
+.page-head{margin-bottom:28px}
+.page-title{font-size:26px;font-weight:800;letter-spacing:-0.5px;color:var(--text)}
+.page-sub{font-size:13px;color:var(--muted);margin-top:4px;font-family:var(--mono)}
+
+/* Error / loading */
+.state-box{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;gap:14px;color:var(--muted)}
+.spinner{width:28px;height:28px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.err-box{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:16px 20px;color:#fca5a5;font-size:13px;font-family:var(--mono);max-width:500px;text-align:center}
+.retry-btn{margin-top:10px;padding:8px 18px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:var(--font);font-size:13px;cursor:pointer;transition:.15s}
+.retry-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* KPI cards */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;transition:.2s}
+.kpi:hover{border-color:var(--border2)}
+.kpi-label{font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.kpi-val{font-size:30px;font-weight:800;font-family:var(--mono);color:var(--text);line-height:1}
+.kpi-sub{font-size:11px;color:var(--muted);margin-top:6px;font-family:var(--mono)}
+
+/* Charts row */
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px}
+.chart-card-title{font-size:12px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:16px}
+.chart-legend{display:flex;gap:14px;margin-bottom:12px;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--dim);font-family:var(--mono)}
+.legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+
+/* Table */
+.table-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.table-top{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)}
+.table-top-title{font-size:13px;font-weight:700;color:var(--text)}
+.filter-row{display:flex;gap:6px;align-items:center}
+.filter-btn{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:11px;font-family:var(--font);font-weight:500;cursor:pointer;transition:.15s;letter-spacing:.3px}
+.filter-btn:hover,.filter-btn.on{background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.4);color:var(--accent)}
+.search-input{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:11px;font-family:var(--mono);outline:none;width:140px;transition:.15s}
+.search-input:focus{border-color:var(--accent)}
+.search-input::placeholder{color:var(--muted)}
+table{width:100%;border-collapse:collapse}
+thead th{padding:10px 16px;text-align:left;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap}
+tbody tr{border-bottom:1px solid rgba(31,35,48,.6);transition:.1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--surface2)}
+td{padding:11px 16px;font-size:12px;color:var(--dim);vertical-align:middle;white-space:nowrap}
+td.name-cell{color:var(--text);font-weight:600;font-size:13px}
+td.company-cell{color:var(--dim)}
+
+/* Score bar */
+.score-wrap{display:flex;align-items:center;gap:8px}
+.score-bg{width:60px;height:3px;background:var(--border2);border-radius:2px;flex-shrink:0}
+.score-fill{height:100%;border-radius:2px}
+.score-num{font-family:var(--mono);font-size:11px;min-width:34px}
+
+/* Category pill */
+.pill{display:inline-flex;align-items:center;justify-content:center;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;font-family:var(--mono)}
+.pill-High{background:rgba(34,197,94,.1);color:#4ade80;border:1px solid rgba(34,197,94,.2)}
+.pill-Medium{background:rgba(245,158,11,.1);color:#fbbf24;border:1px solid rgba(245,158,11,.2)}
+.pill-Low{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2)}
+
+/* Insight cell */
+.insight-cell{max-width:240px;font-size:11px;line-height:1.5;color:var(--muted);white-space:normal}
+
+/* ── Manual page ── */
+.manual-wrap{max-width:580px}
+.form-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px 32px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.field{display:flex;flex-direction:column;gap:7px}
+.field-label{font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)}
+.field input,.field select{background:var(--surface2);border:1px solid var(--border2);border-radius:7px;padding:10px 12px;color:var(--text);font-family:var(--font);font-size:13px;outline:none;transition:.15s;-webkit-appearance:none}
+.field input:focus,.field select:focus{border-color:var(--accent)}
+.field select option{background:var(--surface2)}
+.predict-btn{margin-top:22px;width:100%;padding:13px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-family:var(--font);font-size:14px;font-weight:700;letter-spacing:.5px;cursor:pointer;transition:.15s}
+.predict-btn:hover:not(:disabled){background:#2563eb}
+.predict-btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* Result card */
+.result{margin-top:22px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:22px;animation:fadeUp .3s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.result-score{font-family:var(--mono);font-size:48px;font-weight:700;line-height:1;margin-bottom:4px}
+.result-row{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.result-meta{font-size:12px;color:var(--muted);font-family:var(--mono)}
+.result-insight-box{background:var(--surface);border-left:3px solid var(--accent);border-radius:0 7px 7px 0;padding:12px 16px;font-size:13px;color:var(--dim);line-height:1.6}
+.result-insight-label{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin-bottom:5px;font-family:var(--mono)}
+.result-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.stat-box{background:var(--surface);border-radius:7px;padding:10px 12px;border:1px solid var(--border)}
+.stat-label{font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);font-family:var(--mono);margin-bottom:3px}
+.stat-val{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--text)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useRef,useCallback}=React;
+const API='http://localhost:8000';
+const INDUSTRIES=['Technology','Finance','Healthcare','Education','Manufacturing','Retail'];
+
+function scoreColor(s){return s>0.8?'#22c55e':s>0.5?'#f59e0b':'#ef4444'}
+
+/* ── Sidebar ── */
+function Sidebar({page,setPage}){
+  return(
+    <div className="sidebar">
+      <div className="sidebar-logo">
+        <div className="logo-mark">
+          <div className="logo-box">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M8 3v10" stroke="#fff" strokeWidth="2" strokeLinecap="round"/><circle cx="8" cy="8" r="3" stroke="#fff" strokeWidth="1.5" fill="none"/></svg>
+          </div>
+          <span className="logo-text">LeadIQ</span>
+        </div>
+      </div>
+      <nav className="nav">
+        {[
+          {id:'dashboard',label:'Dashboard',icon:<svg className="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><rect x="9" y="1" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><rect x="1" y="9" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><rect x="9" y="9" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.3"/></svg>},
+          {id:'manual',label:'Predict',icon:<svg className="nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.3"/><path d="M5.5 8h5M8 5.5v5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>},
+        ].map(n=>(
+          <div key={n.id} className={`nav-item${page===n.id?' active':''}`} onClick={()=>setPage(n.id)}>
+            {n.icon}<span>{n.label}</span>
+          </div>
+        ))}
+      </nav>
+      <div className="sidebar-footer">
+        <span className="status-dot"/>
+        <span className="status-text">API live</span>
+      </div>
+    </div>
+  );
+}
+
+/* ── Charts ── */
+function DistChart({leads}){
+  const ref=useRef(null);
+  const chartRef=useRef(null);
+  useEffect(()=>{
+    if(!leads.length)return;
+    const h=leads.filter(l=>l.category==='High').length;
+    const m=leads.filter(l=>l.category==='Medium').length;
+    const lo=leads.filter(l=>l.category==='Low').length;
+    if(chartRef.current)chartRef.current.destroy();
+    chartRef.current=new Chart(ref.current,{
+      type:'doughnut',
+      data:{labels:['High','Medium','Low'],datasets:[{data:[h,m,lo],backgroundColor:['#22c55e','#f59e0b','#ef4444'],borderWidth:0,hoverOffset:3}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw}`}}},cutout:'70%'}
+    });
+    return()=>{if(chartRef.current)chartRef.current.destroy()};
+  },[leads]);
+  return(
+    <div className="chart-card">
+      <div className="chart-card-title">Lead distribution</div>
+      <div className="chart-legend">
+        {[['High','#22c55e'],['Medium','#f59e0b'],['Low','#ef4444']].map(([l,c])=>(
+          <span key={l} className="legend-item"><span className="legend-dot" style={{background:c}}/>{l}</span>
+        ))}
+      </div>
+      <div style={{position:'relative',height:170}}><canvas ref={ref}/></div>
+    </div>
+  );
+}
+
+function IndustryChart({leads}){
+  const ref=useRef(null);
+  const chartRef=useRef(null);
+  useEffect(()=>{
+    if(!leads.length)return;
+    const byInd={};
+    leads.forEach(l=>{
+      if(!byInd[l.industry])byInd[l.industry]={h:0,lo:0};
+      l.category==='High'?byInd[l.industry].h++:byInd[l.industry].lo++;
+    });
+    const labels=Object.keys(byInd);
+    if(chartRef.current)chartRef.current.destroy();
+    chartRef.current=new Chart(ref.current,{
+      type:'bar',
+      data:{
+        labels,
+        datasets:[
+          {label:'High',data:labels.map(k=>byInd[k].h),backgroundColor:'rgba(34,197,94,.7)',borderRadius:3},
+          {label:'Low/Med',data:labels.map(k=>byInd[k].lo),backgroundColor:'rgba(239,68,68,.45)',borderRadius:3}
+        ]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false}},
+        scales:{
+          x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5a6278',font:{size:10}}},
+          y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5a6278',font:{size:10},stepSize:1}}
+        }
+      }
+    });
+    return()=>{if(chartRef.current)chartRef.current.destroy()};
+  },[leads]);
+  return(
+    <div className="chart-card">
+      <div className="chart-card-title">Leads by industry</div>
+      <div className="chart-legend">
+        <span className="legend-item"><span className="legend-dot" style={{background:'#22c55e'}}/> High</span>
+        <span className="legend-item"><span className="legend-dot" style={{background:'#ef4444'}}/> Low/Med</span>
+      </div>
+      <div style={{position:'relative',height:170}}><canvas ref={ref}/></div>
+    </div>
+  );
+}
+
+/* ── Dashboard Page ── */
+function Dashboard(){
+  const [leads,setLeads]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [error,setError]=useState(null);
+  const [filter,setFilter]=useState('All');
+  const [search,setSearch]=useState('');
+
+  const fetchLeads=useCallback(()=>{
+    setLoading(true);setError(null);
+    fetch(`${API}/leads`)
+      .then(r=>{if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json()})
+      .then(d=>{setLeads(d);setLoading(false)})
+      .catch(e=>{setError(e.message);setLoading(false)});
+  },[]);
+
+  useEffect(()=>{fetchLeads()},[fetchLeads]);
+
+  const shown=leads
+    .filter(l=>filter==='All'||l.category===filter)
+    .filter(l=>!search||l.name.toLowerCase().includes(search.toLowerCase())||l.company.toLowerCase().includes(search.toLowerCase())||l.industry.toLowerCase().includes(search.toLowerCase()))
+    .sort((a,b)=>b.score-a.score);
+
+  if(loading)return(
+    <div className="state-box">
+      <div className="spinner"/>
+      <span style={{fontSize:13,color:'var(--muted)',fontFamily:'var(--mono)'}}>Fetching from GET /leads…</span>
+    </div>
+  );
+
+  if(error)return(
+    <div className="state-box">
+      <div className="err-box">
+        <div style={{fontWeight:700,marginBottom:6}}>Cannot reach API</div>
+        <div>Make sure your FastAPI server is running:</div>
+        <div style={{marginTop:6,opacity:.7}}>uvicorn main:app --reload --port 8000</div>
+        <div style={{marginTop:4,opacity:.6,fontSize:11}}>{error}</div>
+      </div>
+      <button className="retry-btn" onClick={fetchLeads}>Retry</button>
+    </div>
+  );
+
+  const h=leads.filter(l=>l.category==='High').length;
+  const m=leads.filter(l=>l.category==='Medium').length;
+  const lo=leads.filter(l=>l.category==='Low').length;
+  const avg=(leads.reduce((a,l)=>a+l.score,0)/leads.length*100).toFixed(1);
+
+  return(
+    <div>
+      <div className="page-head">
+        <div className="page-title">Lead Intelligence</div>
+        <div className="page-sub">GET /leads · {leads.length} records · XGBoost scored</div>
+      </div>
+
+      <div className="kpi-row">
+        <div className="kpi"><div className="kpi-label">Total leads</div><div className="kpi-val">{leads.length}</div><div className="kpi-sub">from leads_db.csv</div></div>
+        <div className="kpi"><div className="kpi-label">High priority</div><div className="kpi-val" style={{color:'#22c55e'}}>{h}</div><div className="kpi-sub">{(h/leads.length*100).toFixed(0)}% of total</div></div>
+        <div className="kpi"><div className="kpi-label">Medium</div><div className="kpi-val" style={{color:'#f59e0b'}}>{m}</div><div className="kpi-sub">{(m/leads.length*100).toFixed(0)}% of total</div></div>
+        <div className="kpi"><div className="kpi-label">Avg score</div><div className="kpi-val">{avg}%</div><div className="kpi-sub">XGBoost output</div></div>
+      </div>
+
+      <div className="charts-row">
+        <DistChart leads={leads}/>
+        <IndustryChart leads={leads}/>
+      </div>
+
+      <div className="table-card">
+        <div className="table-top">
+          <div className="table-top-title">All leads <span style={{color:'var(--muted)',fontWeight:400,fontSize:12}}>({shown.length})</span></div>
+          <div className="filter-row">
+            <input className="search-input" placeholder="Search…" value={search} onChange={e=>setSearch(e.target.value)}/>
+            {['All','High','Medium','Low'].map(f=>(
+              <button key={f} className={`filter-btn${filter===f?' on':''}`} onClick={()=>setFilter(f)}>{f}</button>
+            ))}
+          </div>
+        </div>
+        <div style={{overflowX:'auto'}}>
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>Name</th><th>Company</th><th>Industry</th>
+                <th>Calls</th><th>Emails</th><th>Visits</th>
+                <th>Score</th><th>Category</th><th>AI Insight</th>
+              </tr>
+            </thead>
+            <tbody>
+              {shown.map(l=>(
+                <tr key={l.id}>
+                  <td style={{color:'var(--muted)',fontFamily:'var(--mono)',fontSize:11}}>{l.id}</td>
+                  <td className="name-cell">{l.name}</td>
+                  <td className="company-cell">{l.company}</td>
+                  <td>{l.industry}</td>
+                  <td style={{fontFamily:'var(--mono)'}}>{l.num_calls}</td>
+                  <td style={{fontFamily:'var(--mono)'}}>{l.email_opens}</td>
+                  <td style={{fontFamily:'var(--mono)'}}>{l.website_visits}</td>
+                  <td>
+                    <div className="score-wrap">
+                      <div className="score-bg">
+                        <div className="score-fill" style={{width:`${l.score*100}%`,background:scoreColor(l.score)}}/>
+                      </div>
+                      <span className="score-num" style={{color:scoreColor(l.score)}}>{(l.score*100).toFixed(0)}%</span>
+                    </div>
+                  </td>
+                  <td><span className={`pill pill-${l.category}`}>{l.category}</span></td>
+                  <td className="insight-cell">{l.insight}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Manual Predict Page ── */
+function ManualPredict(){
+  const [form,setForm]=useState({name:'',company:'',industry:'Technology',num_calls:3,email_opens:8,website_visits:20});
+  const [result,setResult]=useState(null);
+  const [loading,setLoading]=useState(false);
+  const [error,setError]=useState(null);
+
+  const handleSubmit=()=>{
+    setLoading(true);setResult(null);setError(null);
+    fetch(`${API}/predict`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({...form,num_calls:+form.num_calls,email_opens:+form.email_opens,website_visits:+form.website_visits})
+    })
+      .then(r=>{if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json()})
+      .then(d=>{setResult(d);setLoading(false)})
+      .catch(e=>{setError(e.message);setLoading(false)});
+  };
+
+  const set=k=>e=>setForm(f=>({...f,[k]:e.target.value}));
+
+  return(
+    <div className="manual-wrap">
+      <div className="page-head">
+        <div className="page-title">Manual Predict</div>
+        <div className="page-sub">POST /predict · enter a lead manually</div>
+      </div>
+
+      <div className="form-card">
+        <div className="form-grid">
+          <div className="field">
+            <label className="field-label">Lead name</label>
+            <input value={form.name} onChange={set('name')} placeholder="e.g. Jane Doe"/>
+          </div>
+          <div className="field">
+            <label className="field-label">Company</label>
+            <input value={form.company} onChange={set('company')} placeholder="e.g. Acme Corp"/>
+          </div>
+          <div className="field" style={{gridColumn:'1/-1'}}>
+            <label className="field-label">Industry</label>
+            <select value={form.industry} onChange={set('industry')}>
+              {INDUSTRIES.map(i=><option key={i}>{i}</option>)}
+            </select>
+          </div>
+          <div className="field">
+            <label className="field-label">Number of calls</label>
+            <input type="number" min="0" max="20" value={form.num_calls} onChange={set('num_calls')}/>
+          </div>
+          <div className="field">
+            <label className="field-label">Email opens</label>
+            <input type="number" min="0" max="50" value={form.email_opens} onChange={set('email_opens')}/>
+          </div>
+          <div className="field" style={{gridColumn:'1/-1'}}>
+            <label className="field-label">Website visits</label>
+            <input type="number" min="0" max="200" value={form.website_visits} onChange={set('website_visits')}/>
+          </div>
+        </div>
+
+        <button className="predict-btn" disabled={loading} onClick={handleSubmit}>
+          {loading?'Running model…':'Run prediction →'}
+        </button>
+
+        {error&&(
+          <div style={{marginTop:14,background:'rgba(239,68,68,.07)',border:'1px solid rgba(239,68,68,.2)',borderRadius:7,padding:'10px 14px',color:'#fca5a5',fontSize:12,fontFamily:'var(--mono)'}}>
+            API error: {error} — is the backend running?
+          </div>
+        )}
+
+        {result&&!loading&&(
+          <div className="result">
+            <div className="result-row">
+              <div>
+                <div style={{fontSize:11,letterSpacing:'1px',textTransform:'uppercase',color:'var(--muted)',fontFamily:'var(--mono)',marginBottom:4}}>Conversion score</div>
+                <div className="result-score" style={{color:scoreColor(result.score)}}>{(result.score*100).toFixed(1)}%</div>
+              </div>
+              <span className={`pill pill-${result.category}`} style={{alignSelf:'flex-end',marginBottom:8}}>{result.category}</span>
+            </div>
+
+            <div className="result-stats">
+              {[['Calls',form.num_calls],['Email opens',form.email_opens],['Site visits',form.website_visits]].map(([l,v])=>(
+                <div key={l} className="stat-box">
+                  <div className="stat-label">{l}</div>
+                  <div className="stat-val">{v}</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="result-insight-box">
+              <div className="result-insight-label">AI insight</div>
+              {result.insight}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ── App ── */
+function App(){
+  const [page,setPage]=useState('dashboard');
+  return(
+    <div id="root">
+      <Sidebar page={page} setPage={setPage}/>
+      <main className="main">
+        {page==='dashboard'?<Dashboard/>:<ManualPredict/>}
+      </main>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
