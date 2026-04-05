@@ -122,7 +122,7 @@ Rules:
 - No bullet points or headers
 - No mention of AI or model or score
 - Maximum 55 words
-- Begin directly — no preamble like "This lead" or "Based on""""
+- Begin directly with the insight, no preamble"""
 
     response = _anthropic_client.messages.create(
         model="claude-haiku-4-5-20251001",
