@@ -1,3 +1,9 @@
+"""
+CRM Lead Intelligence System — FastAPI Backend
+LLM-upgraded: Claude (Anthropic) powers the insight engine
+Fallback: rule-based logic if API key missing or call fails
+"""
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -6,55 +12,122 @@ import pandas as pd
 import numpy as np
 import pickle
 import os
+import re
 
-app = FastAPI(title="CRM Lead Intelligence API")
+# ── Anthropic client (optional — graceful fallback if not configured) ──────
+try:
+    import anthropic
+    _anthropic_client = anthropic.Anthropic(
+        api_key=os.environ.get("ANTHROPIC_API_KEY", "")
+    )
+    _llm_enabled = bool(os.environ.get("ANTHROPIC_API_KEY", "").strip())
+    print(f"[startup] LLM insights: {'ENABLED (Claude)' if _llm_enabled else 'DISABLED (no API key — using fallback)'}")
+except Exception as e:
+    _anthropic_client = None
+    _llm_enabled = False
+    print(f"[startup] LLM disabled: {e}")
+
+# ── App ────────────────────────────────────────────────────────────────────
+app = FastAPI(
+    title="CRM Lead Intelligence API",
+    description="XGBoost scoring + Claude-powered insights",
+    version="2.0.0",
+)
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_methods=["*"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
-# ── Load model at startup ─────────────────────────────────
-BASE = os.path.dirname(os.path.abspath(__file__))
+# ── Load model ─────────────────────────────────────────────────────────────
+BASE_DIR     = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH   = os.path.join(BASE_DIR, "model.pkl")
+ENCODER_PATH = os.path.join(BASE_DIR, "label_encoder.pkl")
+DB_PATH      = os.path.join(BASE_DIR, "leads_db.csv")
 
-with open(os.path.join(BASE, "model.pkl"), "rb") as f:
+with open(MODEL_PATH, "rb") as f:
     model = pickle.load(f)
-
-with open(os.path.join(BASE, "label_encoder.pkl"), "rb") as f:
+with open(ENCODER_PATH, "rb") as f:
     label_encoder = pickle.load(f)
 
-DB_PATH = os.path.join(BASE, "leads_db.csv")
-print("Model loaded. Industries:", list(label_encoder.classes_))
+print(f"[startup] Model loaded. Industries: {list(label_encoder.classes_)}")
 
 
-# ── GenAI Insight Engine ──────────────────────────────────
-def generate_insight(score, industry, num_calls, email_opens, website_visits):
+# ── Fallback: rule-based insight (used when LLM is unavailable) ───────────
+def _rule_based_insight(score, industry, num_calls, email_opens, website_visits):
     if score > 0.8:
         msg = f"High-potential lead from {industry}. Immediate follow-up recommended."
         if website_visits > 35:
-            msg += " Strong website engagement signals buying intent."
+            msg += " Strong website engagement signals active buying intent."
         if email_opens > 12:
-            msg += " High email responsiveness — personalise your outreach."
+            msg += " High email responsiveness — personalise the next outreach."
         return msg
     elif score > 0.5:
         msg = f"Moderate potential in {industry}. Nurture with targeted follow-ups."
         if num_calls < 3:
             msg += " Increase call frequency to build rapport."
         else:
-            msg += " Consistent engagement — keep the momentum."
+            msg += " Consistent engagement — maintain momentum."
         return msg
     else:
         msg = f"Low priority lead from {industry}."
         if email_opens == 0 and website_visits < 5:
             msg += " Very low engagement — consider a re-engagement campaign."
         else:
-            msg += " Minimal activity — monitor passively."
+            msg += " Minimal activity detected — monitor passively."
         return msg
 
 
-# ── Core prediction logic ─────────────────────────────────
+# ── LLM insight: Claude via Anthropic API ─────────────────────────────────
+def _llm_insight(score, category, industry, num_calls, email_opens, website_visits):
+    prompt = f"""You are a senior CRM analyst writing a brief sales insight for a sales rep.
+
+Lead data:
+- Industry: {industry}
+- Calls made: {num_calls}
+- Emails opened: {email_opens}
+- Website visits: {website_visits}
+- Conversion score: {score:.0%}
+- Priority category: {category}
+
+Write a single concise insight (2-3 sentences max) that:
+1. States the lead's potential clearly
+2. Explains WHY based on the engagement data
+3. Gives one specific, actionable next step
+
+Rules:
+- Professional but human tone
+- No bullet points, no headers
+- No mention of "AI" or "model"
+- Under 60 words
+- Start directly with the insight, no preamble"""
+
+    response = _anthropic_client.messages.create(
+        model="claude-haiku-4-5-20251001",
+        max_tokens=120,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    text = response.content[0].text.strip()
+    # Clean up any accidental leading labels like "Insight:" 
+    text = re.sub(r'^(insight|analysis|summary)\s*:\s*', '', text, flags=re.IGNORECASE)
+    return text.strip()
+
+
+# ── Main insight dispatcher ────────────────────────────────────────────────
+def generate_insight(score, category, industry, num_calls, email_opens, website_visits):
+    """Try LLM first, fall back to rules if anything goes wrong."""
+    if _llm_enabled and _anthropic_client:
+        try:
+            return _llm_insight(score, category, industry, num_calls, email_opens, website_visits)
+        except Exception as e:
+            print(f"[insight] LLM call failed ({e}), using rule-based fallback")
+    return _rule_based_insight(score, industry, num_calls, email_opens, website_visits)
+
+
+# ── Core prediction logic ──────────────────────────────────────────────────
 def run_prediction(industry, num_calls, email_opens, website_visits):
     if industry not in label_encoder.classes_:
         industry = "Technology"
@@ -62,11 +135,11 @@ def run_prediction(industry, num_calls, email_opens, website_visits):
     features = np.array([[enc, num_calls, email_opens, website_visits]])
     score    = float(model.predict_proba(features)[0][1])
     category = "High" if score > 0.8 else "Medium" if score > 0.5 else "Low"
-    insight  = generate_insight(score, industry, num_calls, email_opens, website_visits)
+    insight  = generate_insight(score, category, industry, num_calls, email_opens, website_visits)
     return round(score, 4), category, insight
 
 
-# ── Schemas ───────────────────────────────────────────────
+# ── Pydantic schemas ───────────────────────────────────────────────────────
 class LeadOut(BaseModel):
     id: int
     name: str
@@ -96,10 +169,19 @@ class PredictResponse(BaseModel):
     insight: str
 
 
-# ── Endpoints ─────────────────────────────────────────────
+# ── Endpoints ──────────────────────────────────────────────────────────────
 @app.get("/")
 def root():
-    return {"status": "running", "model": "XGBoost"}
+    return {
+        "status": "running",
+        "model": "XGBoost",
+        "version": "2.0.0",
+        "llm_insights": _llm_enabled,
+    }
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
 
 @app.get("/leads", response_model=list[LeadOut])
 def get_leads():
@@ -110,26 +192,22 @@ def get_leads():
     for _, row in df.iterrows():
         score, category, insight = run_prediction(
             str(row["industry"]), int(row["num_calls"]),
-            int(row["email_opens"]), int(row["website_visits"])
-        )
+            int(row["email_opens"]), int(row["website_visits"]))
         results.append(LeadOut(
             id=int(row["id"]), name=str(row["name"]), company=str(row["company"]),
             industry=str(row["industry"]), num_calls=int(row["num_calls"]),
             email_opens=int(row["email_opens"]), website_visits=int(row["website_visits"]),
-            score=score, category=category, insight=insight
-        ))
+            score=score, category=category, insight=insight))
     return results
 
 @app.post("/predict", response_model=PredictResponse)
 def predict(req: PredictRequest):
     score, category, insight = run_prediction(
-        req.industry, req.num_calls, req.email_opens, req.website_visits
-    )
+        req.industry, req.num_calls, req.email_opens, req.website_visits)
     return PredictResponse(
         name=req.name, company=req.company, industry=req.industry,
-        score=score, category=category, insight=insight
-    )
+        score=score, category=category, insight=insight)
 
 @app.get("/industries")
-def industries():
+def get_industries():
     return {"industries": list(label_encoder.classes_)}
