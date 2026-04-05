@@ -12,79 +12,52 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0b0c0f;
-  --surface:#111318;
-  --surface2:#181b22;
-  --border:#1f2330;
-  --border2:#262c3a;
-  --text:#e2e6f0;
-  --muted:#5a6278;
-  --dim:#7d879f;
-  --accent:#3b82f6;
-  --accent2:#6366f1;
-  --high:#22c55e;
-  --med:#f59e0b;
-  --low:#ef4444;
-  --font:'Syne',sans-serif;
-  --mono:'JetBrains Mono',monospace;
+  --bg:#0b0c0f;--surface:#111318;--surface2:#181b22;--border:#1f2330;--border2:#262c3a;
+  --text:#e2e6f0;--muted:#5a6278;--dim:#7d879f;
+  --accent:#3b82f6;--accent2:#6366f1;--high:#22c55e;--med:#f59e0b;--low:#ef4444;
+  --font:'Syne',sans-serif;--mono:'JetBrains Mono',monospace;
 }
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font)}
 #root{display:flex;min-height:100vh}
-
-/* Sidebar */
 .sidebar{width:200px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:0;flex-shrink:0;position:sticky;top:0;height:100vh}
 .sidebar-logo{padding:24px 20px 20px;border-bottom:1px solid var(--border)}
 .logo-mark{display:flex;align-items:center;gap:10px}
 .logo-box{width:30px;height:30px;background:var(--accent);border-radius:6px;display:grid;place-items:center;flex-shrink:0}
-.logo-box svg{width:16px;height:16px}
 .logo-text{font-size:13px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--text)}
 .nav{padding:16px 0;flex:1}
-.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;font-size:13px;font-weight:500;color:var(--muted);transition:all .15s;border-left:2px solid transparent;letter-spacing:.3px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;font-size:13px;font-weight:500;color:var(--muted);transition:all .15s;border-left:2px solid transparent}
 .nav-item:hover{color:var(--text);background:var(--surface2)}
 .nav-item.active{color:var(--accent);border-left-color:var(--accent);background:rgba(59,130,246,.06)}
-.nav-icon{width:16px;height:16px;opacity:.7}
-.nav-item.active .nav-icon{opacity:1}
 .sidebar-footer{padding:16px 20px;border-top:1px solid var(--border)}
 .status-dot{width:6px;height:6px;border-radius:50%;background:var(--high);display:inline-block;margin-right:6px;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 .status-text{font-size:11px;color:var(--muted);font-family:var(--mono)}
-
-/* Main */
 .main{flex:1;overflow-y:auto;padding:32px 36px}
 .page-head{margin-bottom:28px}
-.page-title{font-size:26px;font-weight:800;letter-spacing:-0.5px;color:var(--text)}
+.page-title{font-size:26px;font-weight:800;letter-spacing:-0.5px}
 .page-sub{font-size:13px;color:var(--muted);margin-top:4px;font-family:var(--mono)}
-
-/* Error / loading */
-.state-box{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;gap:14px;color:var(--muted)}
 .spinner{width:28px;height:28px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.err-box{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:16px 20px;color:#fca5a5;font-size:13px;font-family:var(--mono);max-width:500px;text-align:center}
-.retry-btn{margin-top:10px;padding:8px 18px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:var(--font);font-size:13px;cursor:pointer;transition:.15s}
+.state-box{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;gap:14px;color:var(--muted)}
+.err-box{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:14px 18px;color:#fca5a5;font-size:13px;font-family:var(--mono);max-width:500px}
+.retry-btn{padding:8px 18px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:var(--font);font-size:13px;cursor:pointer;transition:.15s}
 .retry-btn:hover{border-color:var(--accent);color:var(--accent)}
-
-/* KPI cards */
 .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
-.kpi{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;transition:.2s}
-.kpi:hover{border-color:var(--border2)}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px}
 .kpi-label{font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
-.kpi-val{font-size:30px;font-weight:800;font-family:var(--mono);color:var(--text);line-height:1}
+.kpi-val{font-size:30px;font-weight:800;font-family:var(--mono);line-height:1}
 .kpi-sub{font-size:11px;color:var(--muted);margin-top:6px;font-family:var(--mono)}
-
-/* Charts row */
 .charts-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px}
 .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px}
-.chart-card-title{font-size:12px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:16px}
-.chart-legend{display:flex;gap:14px;margin-bottom:12px;flex-wrap:wrap}
+.chart-title{font-size:12px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:16px}
+.legend{display:flex;gap:14px;margin-bottom:12px;flex-wrap:wrap}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--dim);font-family:var(--mono)}
 .legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
-
-/* Table */
 .table-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
-.table-top{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)}
-.table-top-title{font-size:13px;font-weight:700;color:var(--text)}
-.filter-row{display:flex;gap:6px;align-items:center}
-.filter-btn{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:11px;font-family:var(--font);font-weight:500;cursor:pointer;transition:.15s;letter-spacing:.3px}
+.table-top{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);flex-wrap:gap}
+.table-top-title{font-size:13px;font-weight:700}
+.filter-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.filter-btn{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:11px;font-family:var(--font);font-weight:500;cursor:pointer;transition:.15s}
 .filter-btn:hover,.filter-btn.on{background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.4);color:var(--accent)}
 .search-input{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:11px;font-family:var(--mono);outline:none;width:140px;transition:.15s}
 .search-input:focus{border-color:var(--accent)}
@@ -96,24 +69,16 @@ tbody tr:last-child{border-bottom:none}
 tbody tr:hover{background:var(--surface2)}
 td{padding:11px 16px;font-size:12px;color:var(--dim);vertical-align:middle;white-space:nowrap}
 td.name-cell{color:var(--text);font-weight:600;font-size:13px}
-td.company-cell{color:var(--dim)}
-
-/* Score bar */
 .score-wrap{display:flex;align-items:center;gap:8px}
 .score-bg{width:60px;height:3px;background:var(--border2);border-radius:2px;flex-shrink:0}
 .score-fill{height:100%;border-radius:2px}
 .score-num{font-family:var(--mono);font-size:11px;min-width:34px}
-
-/* Category pill */
 .pill{display:inline-flex;align-items:center;justify-content:center;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;font-family:var(--mono)}
 .pill-High{background:rgba(34,197,94,.1);color:#4ade80;border:1px solid rgba(34,197,94,.2)}
 .pill-Medium{background:rgba(245,158,11,.1);color:#fbbf24;border:1px solid rgba(245,158,11,.2)}
 .pill-Low{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2)}
-
-/* Insight cell */
 .insight-cell{max-width:240px;font-size:11px;line-height:1.5;color:var(--muted);white-space:normal}
-
-/* ── Manual page ── */
+/* Manual predict */
 .manual-wrap{max-width:580px}
 .form-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px 32px}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
@@ -122,58 +87,97 @@ td.company-cell{color:var(--dim)}
 .field input,.field select{background:var(--surface2);border:1px solid var(--border2);border-radius:7px;padding:10px 12px;color:var(--text);font-family:var(--font);font-size:13px;outline:none;transition:.15s;-webkit-appearance:none}
 .field input:focus,.field select:focus{border-color:var(--accent)}
 .field select option{background:var(--surface2)}
-.predict-btn{margin-top:22px;width:100%;padding:13px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-family:var(--font);font-size:14px;font-weight:700;letter-spacing:.5px;cursor:pointer;transition:.15s}
-.predict-btn:hover:not(:disabled){background:#2563eb}
-.predict-btn:disabled{opacity:.5;cursor:not-allowed}
-
-/* Result card */
+.btn-primary{padding:13px 24px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;transition:.15s}
+.btn-primary:hover:not(:disabled){background:#2563eb}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-secondary{padding:10px 20px;background:transparent;border:1px solid var(--border2);border-radius:8px;color:var(--dim);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn-danger{padding:10px 20px;background:transparent;border:1px solid rgba(239,68,68,.3);border-radius:8px;color:#f87171;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
+.btn-danger:hover{background:rgba(239,68,68,.07)}
 .result{margin-top:22px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:22px;animation:fadeUp .3s ease}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .result-score{font-family:var(--mono);font-size:48px;font-weight:700;line-height:1;margin-bottom:4px}
 .result-row{display:flex;align-items:center;gap:12px;margin-bottom:16px}
-.result-meta{font-size:12px;color:var(--muted);font-family:var(--mono)}
-.result-insight-box{background:var(--surface);border-left:3px solid var(--accent);border-radius:0 7px 7px 0;padding:12px 16px;font-size:13px;color:var(--dim);line-height:1.6}
-.result-insight-label{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin-bottom:5px;font-family:var(--mono)}
 .result-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
 .stat-box{background:var(--surface);border-radius:7px;padding:10px 12px;border:1px solid var(--border)}
 .stat-label{font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);font-family:var(--mono);margin-bottom:3px}
-.stat-val{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--text)}
+.stat-val{font-family:var(--mono);font-size:20px;font-weight:700}
+.insight-box{background:var(--surface);border-left:3px solid var(--accent);border-radius:0 7px 7px 0;padding:12px 16px;font-size:13px;color:var(--dim);line-height:1.6}
+.insight-label{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin-bottom:5px;font-family:var(--mono)}
+/* Upload page */
+.upload-wrap{max-width:680px}
+.upload-zone{border:2px dashed var(--border2);border-radius:12px;padding:48px 32px;text-align:center;cursor:pointer;transition:.2s;background:var(--surface)}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:rgba(59,130,246,.04)}
+.upload-zone input{display:none}
+.upload-icon{width:40px;height:40px;margin:0 auto 16px;opacity:.4}
+.upload-title{font-size:16px;font-weight:700;margin-bottom:6px}
+.upload-sub{font-size:13px;color:var(--muted)}
+.step-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px 28px;margin-bottom:16px}
+.step-header{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}
+.step-title{font-size:15px;font-weight:700}
+.step-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.col-badge{display:inline-flex;align-items:center;padding:4px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;font-size:11px;font-family:var(--mono);color:var(--dim);margin:3px}
+.mapping-row{display:grid;grid-template-columns:160px 1fr;align-items:center;gap:12px;margin-bottom:12px}
+.mapping-label{font-size:12px;font-weight:600;color:var(--text);display:flex;flex-direction:column;gap:2px}
+.mapping-sub{font-size:10px;color:var(--muted);font-weight:400;font-family:var(--mono)}
+.mapping-select{background:var(--surface2);border:1px solid var(--border2);border-radius:7px;padding:9px 12px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;transition:.15s;-webkit-appearance:none;cursor:pointer}
+.mapping-select:focus{border-color:var(--accent)}
+.warn-box{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:12px 16px;margin-bottom:14px}
+.warn-text{font-size:12px;color:#fbbf24;font-family:var(--mono);line-height:1.7}
+.success-box{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);border-radius:8px;padding:14px 18px;margin-bottom:14px}
+.success-text{font-size:13px;color:#4ade80;line-height:1.7}
+.info-box{background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);border-radius:8px;padding:12px 16px;margin-bottom:14px}
+.info-text{font-size:12px;color:#93c5fd;font-family:var(--mono);line-height:1.7}
+.tag-active{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);border-radius:20px;font-size:11px;color:#4ade80;font-family:var(--mono);margin-left:10px}
 </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
 const {useState,useEffect,useRef,useCallback}=React;
-const API='http://localhost:8000';
-const INDUSTRIES=['Technology','Finance','Healthcare','Education','Manufacturing','Retail'];
+const API='https://crm-lead-intelligence.onrender.com';
+
+const REQUIRED_FEATURES=[
+  {key:'industry',    label:'Industry',       hint:'categorical — company sector'},
+  {key:'num_calls',   label:'Number of calls',hint:'numeric — call count'},
+  {key:'email_opens', label:'Email opens',    hint:'numeric — emails opened'},
+  {key:'website_visits',label:'Website visits',hint:'numeric — site sessions'},
+  {key:'converted',  label:'Converted (target)',hint:'0 or 1 — for training'},
+];
+const OPTIONAL_FEATURES=[
+  {key:'name',   label:'Lead name',   hint:'text — optional'},
+  {key:'company',label:'Company',     hint:'text — optional'},
+  {key:'id',     label:'Row ID',      hint:'numeric — optional'},
+];
 
 function scoreColor(s){return s>0.8?'#22c55e':s>0.5?'#f59e0b':'#ef4444'}
 
 /* ── Sidebar ── */
-function Sidebar({page,setPage}){
+function Sidebar({page,setPage,activeDataset}){
+  const items=[
+    {id:'dashboard',label:'Dashboard',icon:'▦'},
+    {id:'upload',   label:'Upload Dataset',icon:'⬆'},
+    {id:'predict',  label:'Predict',icon:'◎'},
+  ];
   return(
     <div className="sidebar">
       <div className="sidebar-logo">
         <div className="logo-mark">
-          <div className="logo-box">
-            <svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M8 3v10" stroke="#fff" strokeWidth="2" strokeLinecap="round"/><circle cx="8" cy="8" r="3" stroke="#fff" strokeWidth="1.5" fill="none"/></svg>
-          </div>
+          <div className="logo-box"><svg width="16" height="16" fill="none" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" stroke="white" strokeWidth="1.5"/><path d="M8 5v3l2 2" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg></div>
           <span className="logo-text">LeadIQ</span>
         </div>
       </div>
       <nav className="nav">
-        {[
-          {id:'dashboard',label:'Dashboard',icon:<svg className="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><rect x="9" y="1" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><rect x="1" y="9" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><rect x="9" y="9" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.3"/></svg>},
-          {id:'manual',label:'Predict',icon:<svg className="nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.3"/><path d="M5.5 8h5M8 5.5v5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>},
-        ].map(n=>(
+        {items.map(n=>(
           <div key={n.id} className={`nav-item${page===n.id?' active':''}`} onClick={()=>setPage(n.id)}>
-            {n.icon}<span>{n.label}</span>
+            <span style={{fontSize:14}}>{n.icon}</span><span>{n.label}</span>
           </div>
         ))}
       </nav>
       <div className="sidebar-footer">
         <span className="status-dot"/>
-        <span className="status-text">API live</span>
+        <span className="status-text">{activeDataset==='uploaded'?'custom dataset':'default dataset'}</span>
       </div>
     </div>
   );
@@ -181,80 +185,34 @@ function Sidebar({page,setPage}){
 
 /* ── Charts ── */
 function DistChart({leads}){
-  const ref=useRef(null);
-  const chartRef=useRef(null);
+  const ref=useRef(null);const chartRef=useRef(null);
   useEffect(()=>{
     if(!leads.length)return;
     const h=leads.filter(l=>l.category==='High').length;
     const m=leads.filter(l=>l.category==='Medium').length;
     const lo=leads.filter(l=>l.category==='Low').length;
     if(chartRef.current)chartRef.current.destroy();
-    chartRef.current=new Chart(ref.current,{
-      type:'doughnut',
-      data:{labels:['High','Medium','Low'],datasets:[{data:[h,m,lo],backgroundColor:['#22c55e','#f59e0b','#ef4444'],borderWidth:0,hoverOffset:3}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw}`}}},cutout:'70%'}
-    });
+    chartRef.current=new Chart(ref.current,{type:'doughnut',data:{labels:['High','Medium','Low'],datasets:[{data:[h,m,lo],backgroundColor:['#22c55e','#f59e0b','#ef4444'],borderWidth:0,hoverOffset:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},cutout:'70%'}});
     return()=>{if(chartRef.current)chartRef.current.destroy()};
   },[leads]);
-  return(
-    <div className="chart-card">
-      <div className="chart-card-title">Lead distribution</div>
-      <div className="chart-legend">
-        {[['High','#22c55e'],['Medium','#f59e0b'],['Low','#ef4444']].map(([l,c])=>(
-          <span key={l} className="legend-item"><span className="legend-dot" style={{background:c}}/>{l}</span>
-        ))}
-      </div>
-      <div style={{position:'relative',height:170}}><canvas ref={ref}/></div>
-    </div>
-  );
+  return(<div className="chart-card"><div className="chart-title">Lead distribution</div><div className="legend">{[['High','#22c55e'],['Medium','#f59e0b'],['Low','#ef4444']].map(([l,c])=><span key={l} className="legend-item"><span className="legend-dot" style={{background:c}}/>{l}</span>)}</div><div style={{position:'relative',height:170}}><canvas ref={ref}/></div></div>);
 }
-
 function IndustryChart({leads}){
-  const ref=useRef(null);
-  const chartRef=useRef(null);
+  const ref=useRef(null);const chartRef=useRef(null);
   useEffect(()=>{
     if(!leads.length)return;
     const byInd={};
-    leads.forEach(l=>{
-      if(!byInd[l.industry])byInd[l.industry]={h:0,lo:0};
-      l.category==='High'?byInd[l.industry].h++:byInd[l.industry].lo++;
-    });
+    leads.forEach(l=>{if(!byInd[l.industry])byInd[l.industry]={h:0,lo:0};l.category==='High'?byInd[l.industry].h++:byInd[l.industry].lo++;});
     const labels=Object.keys(byInd);
     if(chartRef.current)chartRef.current.destroy();
-    chartRef.current=new Chart(ref.current,{
-      type:'bar',
-      data:{
-        labels,
-        datasets:[
-          {label:'High',data:labels.map(k=>byInd[k].h),backgroundColor:'rgba(34,197,94,.7)',borderRadius:3},
-          {label:'Low/Med',data:labels.map(k=>byInd[k].lo),backgroundColor:'rgba(239,68,68,.45)',borderRadius:3}
-        ]
-      },
-      options:{
-        responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false}},
-        scales:{
-          x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5a6278',font:{size:10}}},
-          y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5a6278',font:{size:10},stepSize:1}}
-        }
-      }
-    });
+    chartRef.current=new Chart(ref.current,{type:'bar',data:{labels,datasets:[{label:'High',data:labels.map(k=>byInd[k].h),backgroundColor:'rgba(34,197,94,.7)',borderRadius:3},{label:'Low/Med',data:labels.map(k=>byInd[k].lo),backgroundColor:'rgba(239,68,68,.45)',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5a6278',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5a6278',font:{size:10},stepSize:1}}}}});
     return()=>{if(chartRef.current)chartRef.current.destroy()};
   },[leads]);
-  return(
-    <div className="chart-card">
-      <div className="chart-card-title">Leads by industry</div>
-      <div className="chart-legend">
-        <span className="legend-item"><span className="legend-dot" style={{background:'#22c55e'}}/> High</span>
-        <span className="legend-item"><span className="legend-dot" style={{background:'#ef4444'}}/> Low/Med</span>
-      </div>
-      <div style={{position:'relative',height:170}}><canvas ref={ref}/></div>
-    </div>
-  );
+  return(<div className="chart-card"><div className="chart-title">Leads by industry</div><div className="legend"><span className="legend-item"><span className="legend-dot" style={{background:'#22c55e'}}/> High</span><span className="legend-item"><span className="legend-dot" style={{background:'#ef4444'}}/> Low/Med</span></div><div style={{position:'relative',height:170}}><canvas ref={ref}/></div></div>);
 }
 
-/* ── Dashboard Page ── */
-function Dashboard(){
+/* ── Dashboard ── */
+function Dashboard({activeDataset}){
   const [leads,setLeads]=useState([]);
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState(null);
@@ -263,104 +221,61 @@ function Dashboard(){
 
   const fetchLeads=useCallback(()=>{
     setLoading(true);setError(null);
-    fetch(`${API}/leads`)
-      .then(r=>{if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json()})
-      .then(d=>{setLeads(d);setLoading(false)})
-      .catch(e=>{setError(e.message);setLoading(false)});
+    fetch(`${API}/leads`).then(r=>{if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json()})
+      .then(d=>{setLeads(d);setLoading(false)}).catch(e=>{setError(e.message);setLoading(false)});
   },[]);
 
-  useEffect(()=>{fetchLeads()},[fetchLeads]);
+  useEffect(()=>{fetchLeads()},[fetchLeads,activeDataset]);
 
-  const shown=leads
-    .filter(l=>filter==='All'||l.category===filter)
-    .filter(l=>!search||l.name.toLowerCase().includes(search.toLowerCase())||l.company.toLowerCase().includes(search.toLowerCase())||l.industry.toLowerCase().includes(search.toLowerCase()))
-    .sort((a,b)=>b.score-a.score);
+  const shown=leads.filter(l=>filter==='All'||l.category===filter).filter(l=>!search||l.name.toLowerCase().includes(search.toLowerCase())||l.company.toLowerCase().includes(search.toLowerCase())||l.industry.toLowerCase().includes(search.toLowerCase())).sort((a,b)=>b.score-a.score);
 
-  if(loading)return(
-    <div className="state-box">
-      <div className="spinner"/>
-      <span style={{fontSize:13,color:'var(--muted)',fontFamily:'var(--mono)'}}>Fetching from GET /leads…</span>
-    </div>
-  );
-
-  if(error)return(
-    <div className="state-box">
-      <div className="err-box">
-        <div style={{fontWeight:700,marginBottom:6}}>Cannot reach API</div>
-        <div>Make sure your FastAPI server is running:</div>
-        <div style={{marginTop:6,opacity:.7}}>uvicorn main:app --reload --port 8000</div>
-        <div style={{marginTop:4,opacity:.6,fontSize:11}}>{error}</div>
-      </div>
-      <button className="retry-btn" onClick={fetchLeads}>Retry</button>
-    </div>
-  );
+  if(loading)return<div className="state-box"><div className="spinner"/><span style={{fontSize:13,color:'var(--muted)',fontFamily:'var(--mono)'}}>Fetching leads…</span></div>;
+  if(error)return<div className="state-box"><div className="err-box"><b>Cannot reach API</b><br/>Make sure FastAPI is running at {API}<br/><small>{error}</small></div><button className="retry-btn" onClick={fetchLeads}>Retry</button></div>;
 
   const h=leads.filter(l=>l.category==='High').length;
   const m=leads.filter(l=>l.category==='Medium').length;
-  const lo=leads.filter(l=>l.category==='Low').length;
   const avg=(leads.reduce((a,l)=>a+l.score,0)/leads.length*100).toFixed(1);
 
   return(
     <div>
       <div className="page-head">
-        <div className="page-title">Lead Intelligence</div>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <div className="page-title">Lead Intelligence</div>
+          {activeDataset==='uploaded'&&<span className="tag-active">● custom dataset</span>}
+        </div>
         <div className="page-sub">GET /leads · {leads.length} records · XGBoost scored</div>
       </div>
-
       <div className="kpi-row">
-        <div className="kpi"><div className="kpi-label">Total leads</div><div className="kpi-val">{leads.length}</div><div className="kpi-sub">from leads_db.csv</div></div>
+        <div className="kpi"><div className="kpi-label">Total leads</div><div className="kpi-val">{leads.length}</div><div className="kpi-sub">{activeDataset==='uploaded'?'uploaded dataset':'leads_db.csv'}</div></div>
         <div className="kpi"><div className="kpi-label">High priority</div><div className="kpi-val" style={{color:'#22c55e'}}>{h}</div><div className="kpi-sub">{(h/leads.length*100).toFixed(0)}% of total</div></div>
         <div className="kpi"><div className="kpi-label">Medium</div><div className="kpi-val" style={{color:'#f59e0b'}}>{m}</div><div className="kpi-sub">{(m/leads.length*100).toFixed(0)}% of total</div></div>
         <div className="kpi"><div className="kpi-label">Avg score</div><div className="kpi-val">{avg}%</div><div className="kpi-sub">XGBoost output</div></div>
       </div>
-
-      <div className="charts-row">
-        <DistChart leads={leads}/>
-        <IndustryChart leads={leads}/>
-      </div>
-
+      <div className="charts-row"><DistChart leads={leads}/><IndustryChart leads={leads}/></div>
       <div className="table-card">
         <div className="table-top">
           <div className="table-top-title">All leads <span style={{color:'var(--muted)',fontWeight:400,fontSize:12}}>({shown.length})</span></div>
           <div className="filter-row">
             <input className="search-input" placeholder="Search…" value={search} onChange={e=>setSearch(e.target.value)}/>
-            {['All','High','Medium','Low'].map(f=>(
-              <button key={f} className={`filter-btn${filter===f?' on':''}`} onClick={()=>setFilter(f)}>{f}</button>
-            ))}
+            {['All','High','Medium','Low'].map(f=><button key={f} className={`filter-btn${filter===f?' on':''}`} onClick={()=>setFilter(f)}>{f}</button>)}
           </div>
         </div>
         <div style={{overflowX:'auto'}}>
           <table>
-            <thead>
-              <tr>
-                <th>#</th><th>Name</th><th>Company</th><th>Industry</th>
-                <th>Calls</th><th>Emails</th><th>Visits</th>
-                <th>Score</th><th>Category</th><th>AI Insight</th>
+            <thead><tr><th>#</th><th>Name</th><th>Company</th><th>Industry</th><th>Calls</th><th>Emails</th><th>Visits</th><th>Score</th><th>Category</th><th>AI Insight</th></tr></thead>
+            <tbody>{shown.map(l=>(
+              <tr key={l.id}>
+                <td style={{color:'var(--muted)',fontFamily:'var(--mono)',fontSize:11}}>{l.id}</td>
+                <td className="name-cell">{l.name}</td>
+                <td>{l.company}</td><td>{l.industry}</td>
+                <td style={{fontFamily:'var(--mono)'}}>{l.num_calls}</td>
+                <td style={{fontFamily:'var(--mono)'}}>{l.email_opens}</td>
+                <td style={{fontFamily:'var(--mono)'}}>{l.website_visits}</td>
+                <td><div className="score-wrap"><div className="score-bg"><div className="score-fill" style={{width:`${l.score*100}%`,background:scoreColor(l.score)}}/></div><span className="score-num" style={{color:scoreColor(l.score)}}>{(l.score*100).toFixed(0)}%</span></div></td>
+                <td><span className={`pill pill-${l.category}`}>{l.category}</span></td>
+                <td className="insight-cell">{l.insight}</td>
               </tr>
-            </thead>
-            <tbody>
-              {shown.map(l=>(
-                <tr key={l.id}>
-                  <td style={{color:'var(--muted)',fontFamily:'var(--mono)',fontSize:11}}>{l.id}</td>
-                  <td className="name-cell">{l.name}</td>
-                  <td className="company-cell">{l.company}</td>
-                  <td>{l.industry}</td>
-                  <td style={{fontFamily:'var(--mono)'}}>{l.num_calls}</td>
-                  <td style={{fontFamily:'var(--mono)'}}>{l.email_opens}</td>
-                  <td style={{fontFamily:'var(--mono)'}}>{l.website_visits}</td>
-                  <td>
-                    <div className="score-wrap">
-                      <div className="score-bg">
-                        <div className="score-fill" style={{width:`${l.score*100}%`,background:scoreColor(l.score)}}/>
-                      </div>
-                      <span className="score-num" style={{color:scoreColor(l.score)}}>{(l.score*100).toFixed(0)}%</span>
-                    </div>
-                  </td>
-                  <td><span className={`pill pill-${l.category}`}>{l.category}</span></td>
-                  <td className="insight-cell">{l.insight}</td>
-                </tr>
-              ))}
-            </tbody>
+            ))}</tbody>
           </table>
         </div>
       </div>
@@ -368,8 +283,193 @@ function Dashboard(){
   );
 }
 
-/* ── Manual Predict Page ── */
+/* ── Upload Dataset Page ── */
+function UploadDataset({onDatasetChange}){
+  const [step,setStep]=useState(1);
+  const [uploading,setUploading]=useState(false);
+  const [uploadResult,setUploadResult]=useState(null);
+  const [mapping,setMapping]=useState({});
+  const [applying,setApplying]=useState(false);
+  const [applyResult,setApplyResult]=useState(null);
+  const [retraining,setRetraining]=useState(false);
+  const [retrainResult,setRetrainResult]=useState(null);
+  const [error,setError]=useState(null);
+  const [drag,setDrag]=useState(false);
+  const fileRef=useRef(null);
+
+  const handleFile=async(file)=>{
+    if(!file)return;
+    if(!file.name.endsWith('.csv')){setError('Only CSV files are supported');return;}
+    setError(null);setUploading(true);
+    const fd=new FormData();fd.append('file',file);
+    try{
+      const r=await fetch(`${API}/upload-dataset`,{method:'POST',body:fd});
+      const d=await r.json();
+      if(!r.ok)throw new Error(d.detail||'Upload failed');
+      setUploadResult(d);setStep(2);
+      // Init mapping with auto-detect
+      const autoMap={};
+      const cols=d.columns.map(c=>c.toLowerCase());
+      const guesses={industry:['industry','sector','vertical','industry_type'],num_calls:['num_calls','calls','call_count','number_of_calls','calls_made'],email_opens:['email_opens','emails','email_count','emails_opened','emails_clicked'],website_visits:['website_visits','visits','site_visits','web_visits','page_views','sessions'],converted:['converted','target','label','is_converted','conversion','purchased']};
+      Object.entries(guesses).forEach(([feat,hints])=>{
+        const found=d.columns.find(c=>hints.includes(c.toLowerCase()));
+        if(found)autoMap[feat]=found;
+      });
+      setMapping(autoMap);
+    }catch(e){setError(e.message);}
+    setUploading(false);
+  };
+
+  const applyMappingFn=async()=>{
+    setError(null);setApplying(true);
+    try{
+      const r=await fetch(`${API}/apply-mapping`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mapping})});
+      const d=await r.json();
+      if(!r.ok)throw new Error(d.detail||'Mapping failed');
+      setApplyResult(d);setStep(3);
+    }catch(e){setError(e.message);}
+    setApplying(false);
+  };
+
+  const retrainFn=async()=>{
+    setError(null);setRetraining(true);
+    try{
+      const r=await fetch(`${API}/retrain`,{method:'POST'});
+      const d=await r.json();
+      if(!r.ok)throw new Error(d.detail||'Retrain failed');
+      setRetrainResult(d);setStep(4);
+      onDatasetChange('uploaded');
+    }catch(e){setError(e.message);}
+    setRetraining(false);
+  };
+
+  const resetFn=async()=>{
+    await fetch(`${API}/reset-dataset`,{method:'POST'});
+    setStep(1);setUploadResult(null);setApplyResult(null);setRetrainResult(null);setMapping({});setError(null);
+    onDatasetChange('default');
+  };
+
+  return(
+    <div className="upload-wrap">
+      <div className="page-head">
+        <div className="page-title">Upload Dataset</div>
+        <div className="page-sub">Upload any CSV · Map columns · Retrain model</div>
+      </div>
+
+      {error&&<div className="err-box" style={{marginBottom:16}}>{error}</div>}
+
+      {/* Step 1: Upload */}
+      <div className="step-card">
+        <div className="step-header">
+          <div className="step-num" style={{background:step>=1?'var(--accent)':'var(--border2)'}}>1</div>
+          <div><div className="step-title">Upload CSV file</div><div className="step-sub">Any CSV with your lead data</div></div>
+          {uploadResult&&<span className="tag-active" style={{marginLeft:'auto'}}>✓ {uploadResult.rows} rows</span>}
+        </div>
+        {step===1&&(
+          <div className={`upload-zone${drag?' drag':''}`}
+            onDragOver={e=>{e.preventDefault();setDrag(true)}}
+            onDragLeave={()=>setDrag(false)}
+            onDrop={e=>{e.preventDefault();setDrag(false);handleFile(e.dataTransfer.files[0])}}
+            onClick={()=>fileRef.current.click()}>
+            <input ref={fileRef} type="file" accept=".csv" onChange={e=>handleFile(e.target.files[0])}/>
+            <svg className="upload-icon" viewBox="0 0 40 40" fill="none"><rect x="5" y="10" width="30" height="24" rx="3" stroke="#5a6278" strokeWidth="1.5"/><path d="M20 28V16M14 22l6-6 6 6" stroke="#5a6278" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            {uploading?<div className="spinner" style={{margin:'0 auto'}}/>:<><div className="upload-title">Drop CSV here or click to browse</div><div className="upload-sub">Any column names — you'll map them in the next step</div></>}
+          </div>
+        )}
+        {uploadResult&&step>1&&(
+          <div className="info-box">
+            <div className="info-text">
+              File: {uploadResult.filename} &nbsp;·&nbsp; {uploadResult.rows} rows &nbsp;·&nbsp; {uploadResult.columns.length} columns<br/>
+              Detected: {uploadResult.columns.map(c=><span key={c} className="col-badge">{c}</span>)}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Step 2: Map */}
+      {step>=2&&(
+        <div className="step-card">
+          <div className="step-header">
+            <div className="step-num" style={{background:step>=2?'var(--accent)':'var(--border2)'}}>2</div>
+            <div><div className="step-title">Map columns</div><div className="step-sub">Match your columns to the required features</div></div>
+            {applyResult&&<span className="tag-active" style={{marginLeft:'auto'}}>✓ mapped</span>}
+          </div>
+          <div style={{marginBottom:20}}>
+            <div style={{fontSize:11,color:'var(--muted)',marginBottom:14,fontFamily:'var(--mono)'}}>
+              Your columns: {uploadResult?.columns.map(c=><span key={c} className="col-badge">{c}</span>)}
+            </div>
+            {[...REQUIRED_FEATURES,...OPTIONAL_FEATURES].map(f=>(
+              <div key={f.key} className="mapping-row">
+                <div className="mapping-label">
+                  {f.label}
+                  {REQUIRED_FEATURES.find(r=>r.key===f.key)?<span style={{color:'var(--accent)',fontSize:10}}> *required</span>:''}
+                  <span className="mapping-sub">{f.hint}</span>
+                </div>
+                <select className="mapping-select" value={mapping[f.key]||''} onChange={e=>setMapping({...mapping,[f.key]:e.target.value})}>
+                  <option value="">— not mapped (use default) —</option>
+                  {uploadResult?.columns.map(c=><option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+            ))}
+          </div>
+          {applyResult?.warnings?.length>0&&(
+            <div className="warn-box">
+              <div className="warn-text">{applyResult.warnings.map((w,i)=><div key={i}>⚠ {w}</div>)}</div>
+            </div>
+          )}
+          <button className="btn-primary" disabled={applying} onClick={applyMappingFn} style={{width:'100%'}}>
+            {applying?'Applying mapping…':'Apply mapping →'}
+          </button>
+        </div>
+      )}
+
+      {/* Step 3: Retrain */}
+      {step>=3&&(
+        <div className="step-card">
+          <div className="step-header">
+            <div className="step-num" style={{background:step>=3?'var(--accent)':'var(--border2)'}}>3</div>
+            <div><div className="step-title">Retrain model</div><div className="step-sub">Train XGBoost on your mapped dataset</div></div>
+            {retrainResult&&<span className="tag-active" style={{marginLeft:'auto'}}>✓ live</span>}
+          </div>
+          {applyResult&&(
+            <div className="info-box" style={{marginBottom:16}}>
+              <div className="info-text">
+                Mapped dataset ready: {applyResult.rows} rows · {applyResult.columns.join(', ')}<br/>
+                Sample: {JSON.stringify(applyResult.sample?.[0]||{})}
+              </div>
+            </div>
+          )}
+          {retrainResult?(
+            <div className="success-box">
+              <div className="success-text">
+                ✓ Model retrained successfully!<br/>
+                Rows used: {retrainResult.rows_used} &nbsp;·&nbsp; Train: {retrainResult.train_rows} &nbsp;·&nbsp; Test: {retrainResult.test_rows}<br/>
+                ROC AUC: {retrainResult.roc_auc??'n/a'}<br/>
+                Industries: {retrainResult.industries?.join(', ')}<br/>
+                <strong>Dashboard is now showing your dataset.</strong>
+              </div>
+            </div>
+          ):(
+            <button className="btn-primary" disabled={retraining} onClick={retrainFn} style={{width:'100%'}}>
+              {retraining?'Training XGBoost model…':'Train model on this dataset →'}
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Reset */}
+      {step>=2&&(
+        <div style={{marginTop:8,textAlign:'right'}}>
+          <button className="btn-danger" onClick={resetFn}>Reset to default dataset</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Manual Predict ── */
 function ManualPredict(){
+  const INDUSTRIES=['Technology','Finance','Healthcare','Education','Manufacturing','Retail'];
   const [form,setForm]=useState({name:'',company:'',industry:'Technology',num_calls:3,email_opens:8,website_visits:20});
   const [result,setResult]=useState(null);
   const [loading,setLoading]=useState(false);
@@ -377,16 +477,10 @@ function ManualPredict(){
 
   const handleSubmit=()=>{
     setLoading(true);setResult(null);setError(null);
-    fetch(`${API}/predict`,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({...form,num_calls:+form.num_calls,email_opens:+form.email_opens,website_visits:+form.website_visits})
-    })
+    fetch(`${API}/predict`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...form,num_calls:+form.num_calls,email_opens:+form.email_opens,website_visits:+form.website_visits})})
       .then(r=>{if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json()})
-      .then(d=>{setResult(d);setLoading(false)})
-      .catch(e=>{setError(e.message);setLoading(false)});
+      .then(d=>{setResult(d);setLoading(false)}).catch(e=>{setError(e.message);setLoading(false)});
   };
-
   const set=k=>e=>setForm(f=>({...f,[k]:e.target.value}));
 
   return(
@@ -395,70 +489,35 @@ function ManualPredict(){
         <div className="page-title">Manual Predict</div>
         <div className="page-sub">POST /predict · enter a lead manually</div>
       </div>
-
       <div className="form-card">
         <div className="form-grid">
-          <div className="field">
-            <label className="field-label">Lead name</label>
-            <input value={form.name} onChange={set('name')} placeholder="e.g. Jane Doe"/>
+          <div className="field"><label className="field-label">Lead name</label><input value={form.name} onChange={set('name')} placeholder="e.g. Jane Doe"/></div>
+          <div className="field"><label className="field-label">Company</label><input value={form.company} onChange={set('company')} placeholder="e.g. Acme Corp"/></div>
+          <div className="field" style={{gridColumn:'1/-1'}}><label className="field-label">Industry</label>
+            <select value={form.industry} onChange={set('industry')}>{INDUSTRIES.map(i=><option key={i}>{i}</option>)}</select>
           </div>
-          <div className="field">
-            <label className="field-label">Company</label>
-            <input value={form.company} onChange={set('company')} placeholder="e.g. Acme Corp"/>
-          </div>
-          <div className="field" style={{gridColumn:'1/-1'}}>
-            <label className="field-label">Industry</label>
-            <select value={form.industry} onChange={set('industry')}>
-              {INDUSTRIES.map(i=><option key={i}>{i}</option>)}
-            </select>
-          </div>
-          <div className="field">
-            <label className="field-label">Number of calls</label>
-            <input type="number" min="0" max="20" value={form.num_calls} onChange={set('num_calls')}/>
-          </div>
-          <div className="field">
-            <label className="field-label">Email opens</label>
-            <input type="number" min="0" max="50" value={form.email_opens} onChange={set('email_opens')}/>
-          </div>
-          <div className="field" style={{gridColumn:'1/-1'}}>
-            <label className="field-label">Website visits</label>
-            <input type="number" min="0" max="200" value={form.website_visits} onChange={set('website_visits')}/>
-          </div>
+          <div className="field"><label className="field-label">Number of calls</label><input type="number" min="0" max="20" value={form.num_calls} onChange={set('num_calls')}/></div>
+          <div className="field"><label className="field-label">Email opens</label><input type="number" min="0" max="50" value={form.email_opens} onChange={set('email_opens')}/></div>
+          <div className="field" style={{gridColumn:'1/-1'}}><label className="field-label">Website visits</label><input type="number" min="0" max="200" value={form.website_visits} onChange={set('website_visits')}/></div>
         </div>
-
-        <button className="predict-btn" disabled={loading} onClick={handleSubmit}>
+        <button className="btn-primary" disabled={loading} onClick={handleSubmit} style={{marginTop:22,width:'100%'}}>
           {loading?'Running model…':'Run prediction →'}
         </button>
-
-        {error&&(
-          <div style={{marginTop:14,background:'rgba(239,68,68,.07)',border:'1px solid rgba(239,68,68,.2)',borderRadius:7,padding:'10px 14px',color:'#fca5a5',fontSize:12,fontFamily:'var(--mono)'}}>
-            API error: {error} — is the backend running?
-          </div>
-        )}
-
+        {error&&<div className="err-box" style={{marginTop:12}}>API error: {error}</div>}
         {result&&!loading&&(
           <div className="result">
             <div className="result-row">
-              <div>
-                <div style={{fontSize:11,letterSpacing:'1px',textTransform:'uppercase',color:'var(--muted)',fontFamily:'var(--mono)',marginBottom:4}}>Conversion score</div>
+              <div><div style={{fontSize:11,letterSpacing:'1px',textTransform:'uppercase',color:'var(--muted)',fontFamily:'var(--mono)',marginBottom:4}}>Conversion score</div>
                 <div className="result-score" style={{color:scoreColor(result.score)}}>{(result.score*100).toFixed(1)}%</div>
               </div>
               <span className={`pill pill-${result.category}`} style={{alignSelf:'flex-end',marginBottom:8}}>{result.category}</span>
             </div>
-
             <div className="result-stats">
               {[['Calls',form.num_calls],['Email opens',form.email_opens],['Site visits',form.website_visits]].map(([l,v])=>(
-                <div key={l} className="stat-box">
-                  <div className="stat-label">{l}</div>
-                  <div className="stat-val">{v}</div>
-                </div>
+                <div key={l} className="stat-box"><div className="stat-label">{l}</div><div className="stat-val">{v}</div></div>
               ))}
             </div>
-
-            <div className="result-insight-box">
-              <div className="result-insight-label">AI insight</div>
-              {result.insight}
-            </div>
+            <div className="insight-box"><div className="insight-label">AI insight</div>{result.insight}</div>
           </div>
         )}
       </div>
@@ -469,16 +528,23 @@ function ManualPredict(){
 /* ── App ── */
 function App(){
   const [page,setPage]=useState('dashboard');
+  const [activeDataset,setActiveDataset]=useState('default');
+
+  useEffect(()=>{
+    fetch(`${API}/`).then(r=>r.json()).then(d=>setActiveDataset(d.active_dataset||'default')).catch(()=>{});
+  },[]);
+
   return(
     <div id="root">
-      <Sidebar page={page} setPage={setPage}/>
+      <Sidebar page={page} setPage={setPage} activeDataset={activeDataset}/>
       <main className="main">
-        {page==='dashboard'?<Dashboard/>:<ManualPredict/>}
+        {page==='dashboard'&&<Dashboard activeDataset={activeDataset}/>}
+        {page==='upload'&&<UploadDataset onDatasetChange={setActiveDataset}/>}
+        {page==='predict'&&<ManualPredict/>}
       </main>
     </div>
   );
 }
-
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
 </body>
