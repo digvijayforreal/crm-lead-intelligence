@@ -14,18 +14,25 @@ import pickle
 import os
 import re
 
-# ── Anthropic client (optional — graceful fallback if not configured) ──────
-try:
-    import anthropic
-    _anthropic_client = anthropic.Anthropic(
-        api_key=os.environ.get("ANTHROPIC_API_KEY", "")
-    )
-    _llm_enabled = bool(os.environ.get("ANTHROPIC_API_KEY", "").strip())
-    print(f"[startup] LLM insights: {'ENABLED (Claude)' if _llm_enabled else 'DISABLED (no API key — using fallback)'}")
-except Exception as e:
-    _anthropic_client = None
-    _llm_enabled = False
-    print(f"[startup] LLM disabled: {e}")
+# ── Anthropic client ───────────────────────────────────────────────────────
+_anthropic_client = None
+_llm_enabled = False
+
+_api_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+if _api_key:
+    try:
+        import anthropic
+        import httpx
+        _anthropic_client = anthropic.Anthropic(
+            api_key=_api_key,
+            http_client=httpx.Client(),
+        )
+        _llm_enabled = True
+        print("[startup] LLM insights: ENABLED (Claude Haiku)")
+    except Exception as e:
+        print(f"[startup] LLM disabled: {e}")
+else:
+    print("[startup] LLM insights: DISABLED (no ANTHROPIC_API_KEY — using rule-based fallback)")
 
 # ── App ────────────────────────────────────────────────────────────────────
 app = FastAPI(
@@ -56,7 +63,7 @@ with open(ENCODER_PATH, "rb") as f:
 print(f"[startup] Model loaded. Industries: {list(label_encoder.classes_)}")
 
 
-# ── Fallback: rule-based insight (used when LLM is unavailable) ───────────
+# ── Fallback: rule-based insight ───────────────────────────────────────────
 def _rule_based_insight(score, industry, num_calls, email_opens, website_visits):
     if score > 0.8:
         msg = f"High-potential lead from {industry}. Immediate follow-up recommended."
@@ -81,7 +88,7 @@ def _rule_based_insight(score, industry, num_calls, email_opens, website_visits)
         return msg
 
 
-# ── LLM insight: Claude via Anthropic API ─────────────────────────────────
+# ── LLM insight via Claude Haiku ──────────────────────────────────────────
 def _llm_insight(score, category, industry, num_calls, email_opens, website_visits):
     prompt = f"""You are a senior CRM analyst writing a brief sales insight for a sales rep.
 
@@ -101,7 +108,7 @@ Write a single concise insight (2-3 sentences max) that:
 Rules:
 - Professional but human tone
 - No bullet points, no headers
-- No mention of "AI" or "model"
+- No mention of AI or model
 - Under 60 words
 - Start directly with the insight, no preamble"""
 
@@ -111,23 +118,21 @@ Rules:
         messages=[{"role": "user", "content": prompt}],
     )
     text = response.content[0].text.strip()
-    # Clean up any accidental leading labels like "Insight:" 
     text = re.sub(r'^(insight|analysis|summary)\s*:\s*', '', text, flags=re.IGNORECASE)
     return text.strip()
 
 
-# ── Main insight dispatcher ────────────────────────────────────────────────
+# ── Insight dispatcher ─────────────────────────────────────────────────────
 def generate_insight(score, category, industry, num_calls, email_opens, website_visits):
-    """Try LLM first, fall back to rules if anything goes wrong."""
     if _llm_enabled and _anthropic_client:
         try:
             return _llm_insight(score, category, industry, num_calls, email_opens, website_visits)
         except Exception as e:
-            print(f"[insight] LLM call failed ({e}), using rule-based fallback")
+            print(f"[insight] LLM call failed ({e}), using fallback")
     return _rule_based_insight(score, industry, num_calls, email_opens, website_visits)
 
 
-# ── Core prediction logic ──────────────────────────────────────────────────
+# ── Core prediction ────────────────────────────────────────────────────────
 def run_prediction(industry, num_calls, email_opens, website_visits):
     if industry not in label_encoder.classes_:
         industry = "Technology"
@@ -139,7 +144,7 @@ def run_prediction(industry, num_calls, email_opens, website_visits):
     return round(score, 4), category, insight
 
 
-# ── Pydantic schemas ───────────────────────────────────────────────────────
+# ── Schemas ────────────────────────────────────────────────────────────────
 class LeadOut(BaseModel):
     id: int
     name: str
