@@ -1,7 +1,8 @@
 """
-CRM Lead Intelligence System — FastAPI Backend
-LLM-upgraded: Claude (Anthropic) powers the insight engine
-Fallback: rule-based logic if API key missing or call fails
+CRM Lead Intelligence System — FastAPI Backend v2.1
+Claude-powered insights with smart caching:
+- /leads: scores all leads, calls Claude ONCE per unique profile
+- /predict: always calls Claude fresh for manual input
 """
 
 from fastapi import FastAPI, HTTPException
@@ -32,13 +33,13 @@ if _api_key:
     except Exception as e:
         print(f"[startup] LLM disabled: {e}")
 else:
-    print("[startup] LLM insights: DISABLED (no ANTHROPIC_API_KEY — using rule-based fallback)")
+    print("[startup] LLM insights: DISABLED (no API key — rule-based fallback active)")
 
 # ── App ────────────────────────────────────────────────────────────────────
 app = FastAPI(
     title="CRM Lead Intelligence API",
     description="XGBoost scoring + Claude-powered insights",
-    version="2.0.0",
+    version="2.1.0",
 )
 
 app.add_middleware(
@@ -61,6 +62,17 @@ with open(ENCODER_PATH, "rb") as f:
     label_encoder = pickle.load(f)
 
 print(f"[startup] Model loaded. Industries: {list(label_encoder.classes_)}")
+
+# ── In-memory insight cache (category+industry+engagement bucket as key) ──
+_insight_cache: dict[str, str] = {}
+
+
+def _cache_key(score: float, category: str, industry: str,
+               num_calls: int, email_opens: int, website_visits: int) -> str:
+    """Coarse engagement bucket so ~100 leads need only ~20 Claude calls."""
+    eng = num_calls + email_opens * 0.5 + website_visits * 0.3
+    eng_bucket = "low" if eng < 20 else "mid" if eng < 45 else "high"
+    return f"{category}|{industry}|{eng_bucket}"
 
 
 # ── Fallback: rule-based insight ───────────────────────────────────────────
@@ -100,17 +112,17 @@ Lead data:
 - Conversion score: {score:.0%}
 - Priority category: {category}
 
-Write a single concise insight (2-3 sentences max) that:
-1. States the lead's potential clearly
-2. Explains WHY based on the engagement data
-3. Gives one specific, actionable next step
+Write a single concise insight (2-3 sentences) that:
+1. States the lead potential clearly
+2. Explains WHY based on the specific engagement numbers
+3. Gives one specific actionable next step
 
 Rules:
-- Professional but human tone
-- No bullet points, no headers
-- No mention of AI or model
-- Under 60 words
-- Start directly with the insight, no preamble"""
+- Professional but conversational tone
+- No bullet points or headers
+- No mention of AI or model or score
+- Maximum 55 words
+- Begin directly — no preamble like "This lead" or "Based on""""
 
     response = _anthropic_client.messages.create(
         model="claude-haiku-4-5-20251001",
@@ -122,25 +134,34 @@ Rules:
     return text.strip()
 
 
-# ── Insight dispatcher ─────────────────────────────────────────────────────
-def generate_insight(score, category, industry, num_calls, email_opens, website_visits):
+# ── Insight dispatcher with cache ─────────────────────────────────────────
+def generate_insight(score, category, industry, num_calls,
+                     email_opens, website_visits, use_cache=True):
     if _llm_enabled and _anthropic_client:
+        key = _cache_key(score, category, industry, num_calls, email_opens, website_visits)
+        if use_cache and key in _insight_cache:
+            return _insight_cache[key]
         try:
-            return _llm_insight(score, category, industry, num_calls, email_opens, website_visits)
+            insight = _llm_insight(score, category, industry,
+                                   num_calls, email_opens, website_visits)
+            if use_cache:
+                _insight_cache[key] = insight
+            return insight
         except Exception as e:
             print(f"[insight] LLM call failed ({e}), using fallback")
     return _rule_based_insight(score, industry, num_calls, email_opens, website_visits)
 
 
 # ── Core prediction ────────────────────────────────────────────────────────
-def run_prediction(industry, num_calls, email_opens, website_visits):
+def run_prediction(industry, num_calls, email_opens, website_visits, use_cache=True):
     if industry not in label_encoder.classes_:
         industry = "Technology"
     enc      = label_encoder.transform([industry])[0]
     features = np.array([[enc, num_calls, email_opens, website_visits]])
     score    = float(model.predict_proba(features)[0][1])
     category = "High" if score > 0.8 else "Medium" if score > 0.5 else "Low"
-    insight  = generate_insight(score, category, industry, num_calls, email_opens, website_visits)
+    insight  = generate_insight(score, category, industry, num_calls,
+                                email_opens, website_visits, use_cache=use_cache)
     return round(score, 4), category, insight
 
 
@@ -180,8 +201,9 @@ def root():
     return {
         "status": "running",
         "model": "XGBoost",
-        "version": "2.0.0",
+        "version": "2.1.0",
         "llm_insights": _llm_enabled,
+        "cached_insights": len(_insight_cache),
     }
 
 @app.get("/health")
@@ -190,6 +212,11 @@ def health():
 
 @app.get("/leads", response_model=list[LeadOut])
 def get_leads():
+    """
+    Auto pipeline — scores all leads.
+    Claude is called once per unique engagement profile (cached),
+    so 100 leads may only need ~8-12 actual API calls.
+    """
     if not os.path.exists(DB_PATH):
         raise HTTPException(status_code=500, detail="leads_db.csv not found")
     df = pd.read_csv(DB_PATH)
@@ -197,18 +224,24 @@ def get_leads():
     for _, row in df.iterrows():
         score, category, insight = run_prediction(
             str(row["industry"]), int(row["num_calls"]),
-            int(row["email_opens"]), int(row["website_visits"]))
+            int(row["email_opens"]), int(row["website_visits"]),
+            use_cache=True,
+        )
         results.append(LeadOut(
             id=int(row["id"]), name=str(row["name"]), company=str(row["company"]),
             industry=str(row["industry"]), num_calls=int(row["num_calls"]),
             email_opens=int(row["email_opens"]), website_visits=int(row["website_visits"]),
             score=score, category=category, insight=insight))
+    print(f"[leads] Served {len(results)} leads. Cache size: {len(_insight_cache)}")
     return results
 
 @app.post("/predict", response_model=PredictResponse)
 def predict(req: PredictRequest):
+    """Manual pipeline — always calls Claude fresh (no cache)."""
     score, category, insight = run_prediction(
-        req.industry, req.num_calls, req.email_opens, req.website_visits)
+        req.industry, req.num_calls, req.email_opens, req.website_visits,
+        use_cache=False,
+    )
     return PredictResponse(
         name=req.name, company=req.company, industry=req.industry,
         score=score, category=category, insight=insight)
