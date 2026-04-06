@@ -222,12 +222,10 @@ def get_leads():
 
 @app.post("/predict", response_model=PredictResponse)
 def predict(req: PredictRequest):
-    # Always bypass cache for manual predict — fresh insight every time
-    category = "High" if True else ""  # compute below
     score, category, _ = run_prediction(
         req.industry, req.num_calls, req.email_opens, req.website_visits
     )
-    # Force fresh insight for manual predictions (no cache)
+    # Fresh insight for manual predictions — bypass cache
     insight = None
     if LLM_MODE == "groq" and GROQ_API_KEY:
         try:
