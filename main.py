@@ -38,7 +38,35 @@ def load_model():
     with open(ENCODER_PATH, "rb") as f:
         label_encoder = pickle.load(f)
 
-load_model()
+def retrain_from_default():
+    """Retrain model from leads_db.csv using current XGBoost version."""
+    from sklearn.preprocessing import LabelEncoder
+    from xgboost import XGBClassifier
+    print("[startup] Retraining model with current XGBoost version...")
+    df = pd.read_csv(DEFAULT_DB)
+    le = LabelEncoder()
+    df["industry_enc"] = le.fit_transform(df["industry"].astype(str))
+    X = df[["industry_enc", "num_calls", "email_opens", "website_visits"]].values
+    y = df["converted"].values
+    clf = XGBClassifier(n_estimators=100, max_depth=4, eval_metric="logloss")
+    clf.fit(X, y)
+    with open(MODEL_PATH, "wb") as f:
+        pickle.dump(clf, f)
+    with open(ENCODER_PATH, "wb") as f:
+        pickle.dump(le, f)
+    print("[startup] Model retrained and saved successfully.")
+
+try:
+    load_model()
+    # Quick sanity check — trigger the exact call that was failing
+    import numpy as _np
+    _test = model.predict_proba(_np.array([[0, 5, 10, 30]]))[0][1]
+    print(f"[startup] Model sanity check passed (score={_test:.3f})")
+except Exception as e:
+    print(f"[startup] Model load/check failed ({e}) — retraining from default dataset...")
+    retrain_from_default()
+    load_model()
+    print("[startup] Model reloaded after retraining.")
 
 print(f"[startup] LLM mode: {LLM_MODE.upper()}")
 if LLM_MODE == "groq":
