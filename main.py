@@ -123,8 +123,9 @@ def groq_insight(score: float, industry: str, num_calls: int,
         f"Write a 2-sentence actionable recommendation for the sales rep. "
         f"Be specific to the numbers. No generic advice."
     )
+    api_key = GROQ_API_KEY.strip()
     headers = {
-        "Authorization": f"Bearer {GROQ_API_KEY}",
+        "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
     }
     body = {
@@ -134,7 +135,9 @@ def groq_insight(score: float, industry: str, num_calls: int,
         "temperature": 0.5,
     }
     resp = httpx.post(GROQ_BASE_URL, json=body, headers=headers, timeout=8.0)
-    resp.raise_for_status()
+    if not resp.is_success:
+        print(f"[groq] HTTP {resp.status_code}: {resp.text[:300]}")
+        resp.raise_for_status()
     return resp.json()["choices"][0]["message"]["content"].strip()
 
 # ── Main insight dispatcher ───────────────────────────────
@@ -292,6 +295,33 @@ def clear_cache():
     count = len(_insight_cache)
     _insight_cache.clear()
     return {"message": f"Cleared {count} cached insights. Next /leads call will regenerate via Groq."}
+
+@app.get("/test-groq")
+def test_groq():
+    """Test Groq connectivity and return detailed diagnostics."""
+    key = GROQ_API_KEY.strip()
+    if not key:
+        return {"status": "error", "reason": "GROQ_API_KEY env var is not set"}
+    key_preview = key[:8] + "..." + key[-4:] if len(key) > 12 else "too_short"
+    try:
+        resp = httpx.post(
+            GROQ_BASE_URL,
+            json={
+                "model": GROQ_MODEL,
+                "messages": [{"role": "user", "content": "Say OK"}],
+                "max_tokens": 5,
+            },
+            headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+            timeout=8.0,
+        )
+        if resp.is_success:
+            reply = resp.json()["choices"][0]["message"]["content"].strip()
+            return {"status": "ok", "model": GROQ_MODEL, "reply": reply, "key_preview": key_preview}
+        else:
+            return {"status": "error", "http_status": resp.status_code,
+                    "body": resp.text[:400], "key_preview": key_preview}
+    except Exception as e:
+        return {"status": "exception", "error": str(e), "key_preview": key_preview}
 
 # ── Dataset upload & mapping (preserved from v3) ──────────
 @app.post("/upload-dataset")
