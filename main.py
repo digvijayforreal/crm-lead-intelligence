@@ -233,6 +233,16 @@ def get_leads():
     if not os.path.exists(db_path):
         raise HTTPException(status_code=500, detail="Dataset not found")
     df = pd.read_csv(db_path)
+
+    # Sanitise string columns — replace NaN/None with fallback strings
+    df["name"]    = df["name"].fillna("Unknown").astype(str).str.strip()
+    df["company"] = df["company"].fillna("Unknown").astype(str).str.strip()
+    df["industry"]= df["industry"].fillna("Technology").astype(str).str.strip()
+
+    # Replace empty strings that came through as NaN after strip
+    df["name"]    = df["name"].replace({"": "Unknown", "nan": "Unknown"})
+    df["company"] = df["company"].replace({"": "Unknown", "nan": "Unknown"})
+
     results = []
     for _, row in df.iterrows():
         score, category, insight = run_prediction(
@@ -240,9 +250,13 @@ def get_leads():
             int(row["email_opens"]), int(row["website_visits"])
         )
         results.append(LeadOut(
-            id=int(row["id"]), name=str(row["name"]), company=str(row["company"]),
-            industry=str(row["industry"]), num_calls=int(row["num_calls"]),
-            email_opens=int(row["email_opens"]), website_visits=int(row["website_visits"]),
+            id=int(row["id"]),
+            name=str(row["name"]),
+            company=str(row["company"]),
+            industry=str(row["industry"]),
+            num_calls=int(row["num_calls"]),
+            email_opens=int(row["email_opens"]),
+            website_visits=int(row["website_visits"]),
             score=score, category=category, insight=insight,
         ))
     print(f"[leads] Served {len(results)} leads. Cache size: {len(_insight_cache)}")
@@ -272,6 +286,12 @@ def predict(req: PredictRequest):
 @app.get("/industries")
 def industries():
     return {"industries": list(label_encoder.classes_)}
+
+@app.post("/clear-cache")
+def clear_cache():
+    count = len(_insight_cache)
+    _insight_cache.clear()
+    return {"message": f"Cleared {count} cached insights. Next /leads call will regenerate via Groq."}
 
 # ── Dataset upload & mapping (preserved from v3) ──────────
 @app.post("/upload-dataset")
